@@ -1,15 +1,12 @@
 defmodule Day01Part2 do
-  defp parse(nil) do
-    nil
-  end
-
-  defp parse("") do
-    nil
-  end
-
   defp parse(s) do
-    {i, _} = Integer.parse(s)
-    i
+    case Integer.parse(s) do
+      {i, _} ->
+        i
+
+      _ ->
+        nil
+    end
   end
 
   defp data do
@@ -22,18 +19,20 @@ defmodule Day01Part2 do
     end)
   end
 
+  defp next_acc({sum, list}, nil) do
+    {0, [sum | list]}
+  end
+
+  defp next_acc({sum, list}, n) do
+    {sum + n, list}
+  end
+
   def main do
     data = data()
 
     {_sum, list} =
       Enum.reduce(data, {0, []}, fn n, acc ->
-        {sum, list} = acc
-
-        if n == nil do
-          {0, [sum | list]}
-        else
-          {sum + n, list}
-        end
+        next_acc(acc, n)
       end)
 
     list

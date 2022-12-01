@@ -1,15 +1,12 @@
 defmodule Day01 do
-  defp parse(nil) do
-    nil
-  end
-
-  defp parse("") do
-    nil
-  end
-
   defp parse(s) do
-    {i, _} = Integer.parse(s)
-    i
+    case Integer.parse(s) do
+      {i, _} ->
+        i
+
+      _ ->
+        nil
+    end
   end
 
   defp data do
@@ -22,22 +19,24 @@ defmodule Day01 do
     end)
   end
 
+  defp next_acc({sum, max}, nil) when sum > max do
+    {0, sum}
+  end
+
+  defp next_acc({_sum, max}, nil) do
+    {0, max}
+  end
+
+  defp next_acc({sum, max}, n) do
+    {sum + n, max}
+  end
+
   def main do
     data = data()
 
     {_sum, max} =
       Enum.reduce(data, {0, 0}, fn n, acc ->
-        {sum, max} = acc
-
-        if n == nil do
-          if sum > max do
-            {0, sum}
-          else
-            {0, max}
-          end
-        else
-          {sum + n, max}
-        end
+        next_acc(acc, n)
       end)
 
     IO.puts(max)
