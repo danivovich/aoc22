@@ -1,6 +1,10 @@
-defmodule Day01Part2 do
+defmodule Day01 do
+  @moduledoc """
+  AOC2022 Day 1
+  """
+
   defp elfs do
-    {:ok, contents} = File.read("input.txt")
+    {:ok, contents} = File.read("inputs/day01_input.txt")
 
     contents
     |> String.split("\n\n")
@@ -14,14 +18,16 @@ defmodule Day01Part2 do
     end)
   end
 
-  def main do
+  def part1 do
+    elfs()
+    |> Enum.max()
+  end
+
+  def part2 do
     elfs()
     |> Enum.sort()
     |> Enum.reverse()
     |> Enum.take(3)
     |> Enum.sum()
-    |> IO.puts()
   end
 end
-
-Day01Part2.main()
