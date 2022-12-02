@@ -9,15 +9,12 @@ defmodule Day02 do
   ## Examples
 
       iex> Day02.parse("A Y\\nB X\\nC Z")
-      [["A", "Y"], ["B", "X"], ["C", "Z"]]
+      ["A Y", "B X", "C Z"]
 
   """
   def parse(input) do
     input
     |> String.split("\n", trim: true)
-    |> Enum.map(fn s ->
-      String.split(s, " ", trim: true)
-    end)
   end
 
   def input do
@@ -52,19 +49,19 @@ defmodule Day02 do
     end
 
     # You Win
-    def match(["A", "Y"]), do: 8
-    def match(["B", "Z"]), do: 9
-    def match(["C", "X"]), do: 7
+    def match("A Y"), do: 8
+    def match("B Z"), do: 9
+    def match("C X"), do: 7
 
     # Opponent Wins
-    def match(["A", "Z"]), do: 3
-    def match(["B", "X"]), do: 1
-    def match(["C", "Y"]), do: 2
+    def match("A Z"), do: 3
+    def match("B X"), do: 1
+    def match("C Y"), do: 2
 
     # Draws
-    def match(["A", "X"]), do: 4
-    def match(["B", "Y"]), do: 5
-    def match(["C", "Z"]), do: 6
+    def match("A X"), do: 4
+    def match("B Y"), do: 5
+    def match("C Z"), do: 6
   end
 
   defmodule Part2 do
@@ -94,19 +91,19 @@ defmodule Day02 do
     end
 
     # You Win
-    def match(["A", "Z"]), do: 8
-    def match(["B", "Z"]), do: 9
-    def match(["C", "Z"]), do: 7
+    def match("A Z"), do: 8
+    def match("B Z"), do: 9
+    def match("C Z"), do: 7
 
     # Opponent Wins
-    def match(["A", "X"]), do: 3
-    def match(["B", "X"]), do: 1
-    def match(["C", "X"]), do: 2
+    def match("A X"), do: 3
+    def match("B X"), do: 1
+    def match("C X"), do: 2
 
     # Draws
-    def match(["A", "Y"]), do: 4
-    def match(["B", "Y"]), do: 5
-    def match(["C", "Y"]), do: 6
+    def match("A Y"), do: 4
+    def match("B Y"), do: 5
+    def match("C Y"), do: 6
   end
 
   def part1 do
