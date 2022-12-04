@@ -8,7 +8,7 @@ defmodule Day04Test do
     assert Day04.part1() == 580
   end
 
-  # test "checks part 2" do
-  # assert Day04.part2() == nil
-  # end
+  test "checks part 2" do
+    assert Day04.part2() == 895
+  end
 end

@@ -13,39 +13,72 @@ defmodule Day04 do
     contents
   end
 
+  @doc """
+  Parse input
+
+  ## Examples
+
+      iex> Day04.parseAssignments(Day04.example())
+      [{2..4, 6..8}, {2..3, 4..5}, {5..7, 7..9}, {2..8, 3..7}, {6..6, 4..6}, {2..6, 4..8}]
+
+  """
+  def parseAssignments(input) do
+    input
+    |> String.split("\n", trim: true)
+    |> Enum.map(fn pair ->
+      [first, second] = String.split(pair, ",", trim: true)
+      {range(first), range(second)}
+    end)
+  end
+
+  defp range(input) do
+    [start, stop] =
+      input
+      |> String.split("-", trim: true)
+      |> Enum.map(fn string ->
+        {i, _} = Integer.parse(string)
+        i
+      end)
+
+    Range.new(start, stop)
+  end
+
   defmodule Part1 do
     @moduledoc """
     AOC2022 Day 4 Part 1
     """
 
-    @doc """
-    Parse input
+    def score(assignments) do
+      Enum.map(assignments, fn {first, second} ->
+        f =
+          first
+          |> Enum.to_list()
+          |> MapSet.new()
 
-    ## Examples
+        s =
+          second
+          |> Enum.to_list()
+          |> MapSet.new()
 
-        iex> Day04.Part1.parseAssignments(Day04.example())
-        [{2..4, 6..8}, {2..3, 4..5}, {5..7, 7..9}, {2..8, 3..7}, {6..6, 4..6}, {2..6, 4..8}]
+        case f == s do
+          true ->
+            1
 
-    """
-    def parseAssignments(input) do
-      input
-      |> String.split("\n", trim: true)
-      |> Enum.map(fn pair ->
-        [first, second] = String.split(pair, ",", trim: true)
-        {range(first), range(second)}
+          false ->
+            score(f, s) + score(s, f)
+        end
       end)
+      |> Enum.sum()
     end
 
-    defp range(input) do
-      [start, stop] =
-        input
-        |> String.split("-", trim: true)
-        |> Enum.map(fn string ->
-          {i, _} = Integer.parse(string)
-          i
-        end)
+    defp score(first, second) do
+      case MapSet.intersection(first, second) == first do
+        true ->
+          1
 
-      Range.new(start, stop)
+        false ->
+          0
+      end
     end
 
     @doc """
@@ -59,8 +92,8 @@ defmodule Day04 do
     """
     def example() do
       Day04.example()
-      |> parseAssignments()
-      |> Day04.score()
+      |> Day04.parseAssignments()
+      |> Day04.Part1.score()
     end
   end
 
@@ -70,72 +103,53 @@ defmodule Day04 do
     """
 
     @doc """
-    Parse input
-
-    ## Examples
-
-        iex> Day04.Part2.parseAssignments(Day04.example())
-        nil
-
-    """
-    def parseAssignments(_input) do
-    end
-
-    @doc """
     Readme example part2
 
     ## Examples
 
         iex> Day04.Part2.example()
-        nil
+        4
 
     """
     def example() do
+      Day04.example()
+      |> Day04.parseAssignments()
+      |> Day04.Part2.score()
     end
-  end
 
-  def score(assignments) do
-    Enum.map(assignments, fn {first, second} ->
-      f =
-        first
-        |> Enum.to_list()
-        |> MapSet.new()
+    def score(assignments) do
+      Enum.map(assignments, fn {first, second} ->
+        f =
+          first
+          |> Enum.to_list()
+          |> MapSet.new()
 
-      s =
-        second
-        |> Enum.to_list()
-        |> MapSet.new()
+        s =
+          second
+          |> Enum.to_list()
+          |> MapSet.new()
 
-      case f == s do
-        true ->
-          1
+        case MapSet.size(MapSet.intersection(f, s)) do
+          0 ->
+            0
 
-        false ->
-          score(f, s) + score(s, f)
-      end
-    end)
-    |> Enum.sum()
-  end
-
-  defp score(first, second) do
-    case MapSet.intersection(first, second) == first do
-      true ->
-        1
-
-      false ->
-        0
+          _ ->
+            1
+        end
+      end)
+      |> Enum.sum()
     end
   end
 
   def part1 do
     input()
-    |> Part1.parseAssignments()
-    |> Day04.score()
+    |> Day04.parseAssignments()
+    |> Day04.Part1.score()
   end
 
   def part2 do
     input()
-    |> Part2.parseAssignments()
-    |> Day04.score()
+    |> Day04.parseAssignments()
+    |> Day04.Part2.score()
   end
 end
