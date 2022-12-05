@@ -5,18 +5,20 @@ defmodule Day05 do
 
   def example do
     {:ok, contents} = File.read("inputs/day05_example.txt")
-    {contents, 3}
+    contents
   end
 
   def input do
     {:ok, contents} = File.read("inputs/day05_input.txt")
-    {contents, 9}
+    contents
   end
 
-  def parse({input, stack_count}) do
+  def parse(input) do
     [drawing, movements] =
       input
       |> String.split("\n\n", trim: true)
+
+    stack_count = stack_count(drawing)
 
     init_stacks =
       Range.new(0, stack_count)
@@ -34,6 +36,18 @@ defmodule Day05 do
       |> String.split("\n", trim: true)
 
     %{moves: moves, stacks: stacks}
+  end
+
+  defp stack_count(drawing) do
+    {stack_count, _} =
+      drawing
+      |> String.split("\n", trim: true)
+      |> Enum.at(-1)
+      |> String.split(" ", trim: true)
+      |> Enum.at(-1)
+      |> Integer.parse()
+
+    stack_count
   end
 
   defp updateStacksByRow(s, positions, stacks) do
