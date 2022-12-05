@@ -26,7 +26,7 @@ defmodule Day05 do
       drawing
       |> String.split("\n", trim: true)
       |> Enum.reduce(init_stacks, fn s, stacks ->
-        updateStacksByRow(s, String.length(s), stacks)
+        updateStacksByRow(s, stack_count, stacks)
       end)
 
     moves =
@@ -36,182 +36,24 @@ defmodule Day05 do
     %{moves: moves, stacks: stacks}
   end
 
-  defp updateStacksByRow(s, 3, stacks) do
-    %{"one" => one} = Regex.named_captures(~r/(?<one>[ \w\W]{3})/, s)
-
-    stacks
-    |> updateStack(1, one)
+  defp updateStacksByRow(s, positions, stacks) do
+    Range.new(1, positions)
+    |> Enum.reduce(stacks, fn position, stacks ->
+      index = position * 4 - 2
+      crate = String.at(s, index - 1)
+      updateStack(stacks, position, crate)
+    end)
   end
 
-  defp updateStacksByRow(s, 7, stacks) do
-    %{"one" => one, "two" => two} =
-      Regex.named_captures(~r/(?<one>[ \w\W]{3}) (?<two>[ \w\W]{3})/, s)
-
-    stacks
-    |> updateStack(1, one)
-    |> updateStack(2, two)
-  end
-
-  defp updateStacksByRow(s, 11, stacks) do
-    %{"one" => one, "two" => two, "three" => three} =
-      Regex.named_captures(~r/(?<one>[ \w\W]{3}) (?<two>[ \w\W]{3}) (?<three>[ \w\W]{3})/, s)
-
-    stacks
-    |> updateStack(1, one)
-    |> updateStack(2, two)
-    |> updateStack(3, three)
-  end
-
-  defp updateStacksByRow(s, 15, stacks) do
-    %{"one" => one, "two" => two, "three" => three, "four" => four} =
-      Regex.named_captures(
-        ~r/(?<one>[ \w\W]{3}) (?<two>[ \w\W]{3}) (?<three>[ \w\W]{3}) (?<four>[ \w\W]{3})/,
-        s
-      )
-
-    stacks
-    |> updateStack(1, one)
-    |> updateStack(2, two)
-    |> updateStack(3, three)
-    |> updateStack(4, four)
-  end
-
-  defp updateStacksByRow(s, 19, stacks) do
-    %{"one" => one, "two" => two, "three" => three, "four" => four, "five" => five} =
-      Regex.named_captures(
-        ~r/(?<one>[ \w\W]{3}) (?<two>[ \w\W]{3}) (?<three>[ \w\W]{3}) (?<four>[ \w\W]{3}) (?<five>[ \w\W]{3})/,
-        s
-      )
-
-    stacks
-    |> updateStack(1, one)
-    |> updateStack(2, two)
-    |> updateStack(3, three)
-    |> updateStack(4, four)
-    |> updateStack(5, five)
-  end
-
-  defp updateStacksByRow(s, 23, stacks) do
-    %{"one" => one, "two" => two, "three" => three, "four" => four, "five" => five, "six" => six} =
-      Regex.named_captures(
-        ~r/(?<one>[ \w\W]{3}) (?<two>[ \w\W]{3}) (?<three>[ \w\W]{3}) (?<four>[ \w\W]{3}) (?<five>[ \w\W]{3}) (?<six>[ \w\W]{3})/,
-        s
-      )
-
-    stacks
-    |> updateStack(1, one)
-    |> updateStack(2, two)
-    |> updateStack(3, three)
-    |> updateStack(4, four)
-    |> updateStack(5, five)
-    |> updateStack(6, six)
-  end
-
-  defp updateStacksByRow(s, 27, stacks) do
-    %{
-      "one" => one,
-      "two" => two,
-      "three" => three,
-      "four" => four,
-      "five" => five,
-      "six" => six,
-      "seven" => seven
-    } =
-      Regex.named_captures(
-        ~r/(?<one>[ \w\W]{3}) (?<two>[ \w\W]{3}) (?<three>[ \w\W]{3}) (?<four>[ \w\W]{3}) (?<five>[ \w\W]{3}) (?<six>[ \w\W]{3}) (?<seven>[ \w\W]{3})/,
-        s
-      )
-
-    stacks
-    |> updateStack(1, one)
-    |> updateStack(2, two)
-    |> updateStack(3, three)
-    |> updateStack(4, four)
-    |> updateStack(5, five)
-    |> updateStack(6, six)
-    |> updateStack(7, seven)
-  end
-
-  defp updateStacksByRow(s, 31, stacks) do
-    %{
-      "one" => one,
-      "two" => two,
-      "three" => three,
-      "four" => four,
-      "five" => five,
-      "six" => six,
-      "seven" => seven,
-      "eight" => eight
-    } =
-      Regex.named_captures(
-        ~r/(?<one>[ \w\W]{3}) (?<two>[ \w\W]{3}) (?<three>[ \w\W]{3}) (?<four>[ \w\W]{3}) (?<five>[ \w\W]{3}) (?<six>[ \w\W]{3}) (?<seven>[ \w\W]{3}) (?<eight>[ \w\W]{3})/,
-        s
-      )
-
-    stacks
-    |> updateStack(1, one)
-    |> updateStack(2, two)
-    |> updateStack(3, three)
-    |> updateStack(4, four)
-    |> updateStack(5, five)
-    |> updateStack(6, six)
-    |> updateStack(7, seven)
-    |> updateStack(8, eight)
-  end
-
-  defp updateStacksByRow(s, 35, stacks) do
-    %{
-      "one" => one,
-      "two" => two,
-      "three" => three,
-      "four" => four,
-      "five" => five,
-      "six" => six,
-      "seven" => seven,
-      "eight" => eight,
-      "nine" => nine
-    } =
-      Regex.named_captures(
-        ~r/(?<one>[ \w\W]{3}) (?<two>[ \w\W]{3}) (?<three>[ \w\W]{3}) (?<four>[ \w\W]{3}) (?<five>[ \w\W]{3}) (?<six>[ \w\W]{3}) (?<seven>[ \w\W]{3}) (?<eight>[ \w\W]{3}) (?<nine>[ \w\W]{3})/,
-        s
-      )
-
-    stacks
-    |> updateStack(1, one)
-    |> updateStack(2, two)
-    |> updateStack(3, three)
-    |> updateStack(4, four)
-    |> updateStack(5, five)
-    |> updateStack(6, six)
-    |> updateStack(7, seven)
-    |> updateStack(8, eight)
-    |> updateStack(9, nine)
-  end
-
-  defp updateStacksByRow(_s, _l, stacks) do
-    # ignore the last line
-    stacks
-  end
+  def updateStack(stacks, _stack_id, " "), do: stacks
 
   def updateStack(stacks, stack_id, value) do
-    case clean(value) do
-      nil ->
-        stacks
+    new_stack =
+      stacks
+      |> Enum.at(stack_id, [])
+      |> List.insert_at(0, value)
 
-      v ->
-        new_stack =
-          stacks
-          |> Enum.at(stack_id, [])
-          |> List.insert_at(0, v)
-
-        List.replace_at(stacks, stack_id, new_stack)
-    end
-  end
-
-  defp clean("   "), do: nil
-
-  defp clean(s) do
-    Regex.replace(~r/[\[\]]/, s, "")
+    List.replace_at(stacks, stack_id, new_stack)
   end
 
   defmodule Part1 do
