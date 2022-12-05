@@ -56,6 +56,24 @@ defmodule Day05 do
     List.replace_at(stacks, stack_id, new_stack)
   end
 
+  def resolve(stacks) do
+    stacks
+    |> Enum.map(fn stack ->
+      Enum.at(stack, -1)
+    end)
+    |> Enum.join()
+  end
+
+  def translateMove(move) do
+    %{"count" => c, "source" => s, "dest" => d} =
+      Regex.named_captures(~r/move (?<count>\d+) from (?<source>\d+) to (?<dest>\d+)/, move)
+
+    {count, _} = Integer.parse(c)
+    {source, _} = Integer.parse(s)
+    {dest, _} = Integer.parse(d)
+    {source, dest, count}
+  end
+
   defmodule Part1 do
     @doc """
     Parse input
@@ -70,34 +88,16 @@ defmodule Day05 do
       Day05.example()
       |> Day05.parse()
       |> rearrange()
-      |> resolve()
-    end
-
-    def resolve(stacks) do
-      stacks
-      |> Enum.map(fn stack ->
-        Enum.at(stack, -1)
-      end)
-      |> Enum.join()
+      |> Day05.resolve()
     end
 
     def rearrange(data) do
       data[:moves]
       |> Enum.reduce(data[:stacks], fn move, stacks ->
         move
-        |> translateMove()
+        |> Day05.translateMove()
         |> applyMove(stacks)
       end)
-    end
-
-    defp translateMove(move) do
-      %{"count" => c, "source" => s, "dest" => d} =
-        Regex.named_captures(~r/move (?<count>\d+) from (?<source>\d+) to (?<dest>\d+)/, move)
-
-      {count, _} = Integer.parse(c)
-      {source, _} = Integer.parse(s)
-      {dest, _} = Integer.parse(d)
-      {source, dest, count}
     end
 
     defp applyMove({source_id, dest_id, count}, stacks) do
@@ -113,12 +113,54 @@ defmodule Day05 do
   end
 
   defmodule Part2 do
+    @doc """
+    Parse input
+
+    ## Examples
+
+        iex> Day05.Part2.example()
+        "MCD"
+
+    """
+    def example do
+      Day05.example()
+      |> Day05.parse()
+      |> rearrange()
+      |> Day05.resolve()
+    end
+
+    def rearrange(data) do
+      data[:moves]
+      |> Enum.reduce(data[:stacks], fn move, stacks ->
+        move
+        |> Day05.translateMove()
+        |> applyMove(stacks)
+      end)
+    end
+
+    defp applyMove({source_id, dest_id, count}, stacks) do
+      source_stack = Enum.at(stacks, source_id)
+      dest_stack = Enum.at(stacks, dest_id)
+      left = Enum.take(source_stack, length(source_stack) - count)
+      moving = Enum.take(source_stack, -1 * count)
+
+      stacks
+      |> List.replace_at(source_id, left)
+      |> List.replace_at(dest_id, Enum.concat(dest_stack, moving))
+    end
   end
 
   def part1 do
     Day05.input()
     |> Day05.parse()
     |> Day05.Part1.rearrange()
-    |> Day05.Part1.resolve()
+    |> Day05.resolve()
+  end
+
+  def part2 do
+    Day05.input()
+    |> Day05.parse()
+    |> Day05.Part2.rearrange()
+    |> Day05.resolve()
   end
 end
