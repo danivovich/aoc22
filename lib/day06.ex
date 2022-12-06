@@ -8,8 +8,24 @@ defmodule Day06 do
     contents
   end
 
-  def parse(input) do
-    input
+  def findPacketMarker(values, size \\ 14, index \\ 1) do
+    {packet, message} = Enum.split(values, size)
+    {_first, remain} = Enum.split(packet, 1)
+    findPacketMarker(packet, size, Enum.concat(remain, message), index)
+  end
+
+  def findPacketMarker(_packet, _size, [], _index), do: nil
+
+  def findPacketMarker(packet, size, message, index) do
+    case Enum.uniq(packet) == packet do
+      true ->
+        index + size - 1
+
+      _ ->
+        {packet, message} = Enum.split(message, size)
+        {_first, remain} = Enum.split(packet, 1)
+        findPacketMarker(packet, size, Enum.concat(remain, message), index + 1)
+    end
   end
 
   defmodule Part1 do
@@ -33,27 +49,7 @@ defmodule Day06 do
     def example(input) do
       input
       |> String.split("", trim: true)
-      |> findPacketMarker(1)
-    end
-
-    def findPacketMarker(values, index) do
-      {four, rest} = Enum.split(values, 4)
-      {_first, three} = Enum.split(four, 1)
-      findPacketMarker(four, Enum.concat(three, rest), index)
-    end
-
-    def findPacketMarker(_four, [], _index), do: nil
-
-    def findPacketMarker(four, rest, index) do
-      case Enum.uniq(four) == four do
-        true ->
-          index + 3
-
-        _ ->
-          {four, next_rest} = Enum.split(rest, 4)
-          {_first, three} = Enum.split(four, 1)
-          findPacketMarker(four, Enum.concat(three, next_rest), index + 1)
-      end
+      |> Day06.findPacketMarker(4)
     end
   end
 
@@ -78,39 +74,19 @@ defmodule Day06 do
     def example(input) do
       input
       |> String.split("", trim: true)
-      |> findPacketMarker(1)
-    end
-
-    def findPacketMarker(values, index) do
-      {fourteen, rest} = Enum.split(values, 14)
-      {_first, thirteen} = Enum.split(fourteen, 1)
-      findPacketMarker(fourteen, Enum.concat(thirteen, rest), index)
-    end
-
-    def findPacketMarker(_four, [], _index), do: nil
-
-    def findPacketMarker(fourteen, rest, index) do
-      case Enum.uniq(fourteen) == fourteen do
-        true ->
-          index + 13
-
-        _ ->
-          {fourteen, next_rest} = Enum.split(rest, 14)
-          {_first, thirteen} = Enum.split(fourteen, 1)
-          findPacketMarker(fourteen, Enum.concat(thirteen, next_rest), index + 1)
-      end
+      |> Day06.findPacketMarker(14)
     end
   end
 
   def part1 do
-    Day06.input()
+    input()
     |> String.split("", trim: true)
-    |> Day06.Part1.findPacketMarker(1)
+    |> findPacketMarker(4)
   end
 
   def part2 do
-    Day06.input()
+    input()
     |> String.split("", trim: true)
-    |> Day06.Part2.findPacketMarker(1)
+    |> findPacketMarker(14)
   end
 end
