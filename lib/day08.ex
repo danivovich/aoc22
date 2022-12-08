@@ -43,7 +43,7 @@ defmodule Day08 do
 
   defmodule Part1 do
     @doc """
-    Example Inputs
+    Example Inputs for Part 1
 
     ## Examples
 
@@ -89,7 +89,7 @@ defmodule Day08 do
     def isVisible(_tree, _, []), do: true
 
     @doc """
-    Example Inputs
+    Determine a tree is visible
 
     ## Examples
 
@@ -113,7 +113,7 @@ defmodule Day08 do
     end
 
     @doc """
-    Example Inputs
+    Find trees around a tree
 
     ## Examples
 
@@ -136,6 +136,105 @@ defmodule Day08 do
   end
 
   defmodule Part2 do
+    @doc """
+    Example Inputs for Part 2
+
+    ## Examples
+
+        iex> Day08.Part2.example()
+        8
+
+    """
+    def example() do
+      Day08.example()
+      |> scenicScores()
+      |> Enum.max()
+    end
+
+    def scenicScores({rows, columns}) do
+      row_count = length(rows)
+      column_count = length(columns)
+
+      Range.new(0, row_count - 1)
+      |> Enum.flat_map(fn r ->
+        Range.new(0, column_count - 1)
+        |> Enum.map(fn c ->
+          row = Enum.at(rows, r)
+          column = Enum.at(columns, c)
+          tree = Enum.at(row, c)
+          {trees_above, trees_below} = treesAround(column, r)
+          {trees_left, trees_right} = treesAround(row, c)
+          trees_above = Enum.reverse(trees_above)
+          trees_left = Enum.reverse(trees_left)
+          up = score(tree, trees_above)
+          down = score(tree, trees_below)
+          right = score(tree, trees_right)
+          left = score(tree, trees_left)
+
+          up * down * right * left
+        end)
+      end)
+    end
+
+    @doc """
+    Determine a tree's viewing distance
+
+    ## Examples
+
+        iex> Day08.Part2.score(3, [])
+        0
+        iex> Day08.Part2.score(5, [3])
+        1
+        iex> Day08.Part2.score(5, [5, 5, 2])
+        1
+        iex> Day08.Part2.score(5, [1, 2])
+        2
+        iex> Day08.Part2.score(5, [3, 5, 3])
+        2
+        iex> Day08.Part2.score(5, [3, 5, 3])
+        2
+        iex> Day08.Part2.score(5, [3, 3])
+        2
+        iex> Day08.Part2.score(5, [3])
+        1
+        iex> Day08.Part2.score(5, [4, 9])
+        2
+
+    """
+    def score(tree, [next_tree | _trees]) when next_tree == tree, do: 1
+    def score(_tree, []), do: 0
+
+    def score(tree, [next_tree | trees]) do
+      case tree > next_tree do
+        true ->
+          1 + score(tree, trees)
+
+        false ->
+          1
+      end
+    end
+
+    @doc """
+    Find trees around a tree
+
+    ## Examples
+
+        iex> Day08.Part1.treesAround([1, 2, 3, 4], 0)
+        {[], [2, 3, 4]}
+        iex> Day08.Part1.treesAround([1, 2, 3, 4], 1)
+        {[1], [3, 4]}
+        iex> Day08.Part1.treesAround([1, 2, 3, 4], 3)
+        {[1, 2, 3], []}
+
+    """
+    def treesAround(data, 0) do
+      {[], Enum.drop(data, 1)}
+    end
+
+    def treesAround(data, pos) do
+      {left, right} = Enum.split(data, pos)
+      {left, Enum.drop(right, 1)}
+    end
   end
 
   def part1 do
@@ -145,5 +244,7 @@ defmodule Day08 do
 
   def part2 do
     input()
+    |> Day08.Part2.scenicScores()
+    |> Enum.max()
   end
 end
