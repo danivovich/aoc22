@@ -41,6 +41,28 @@ defmodule Day08 do
     {rows, columns}
   end
 
+  @doc """
+  Find trees around a tree
+
+  ## Examples
+
+      iex> Day08.treesAround([1, 2, 3, 4], 0)
+      {[], [2, 3, 4]}
+      iex> Day08.treesAround([1, 2, 3, 4], 1)
+      {[1], [3, 4]}
+      iex> Day08.treesAround([1, 2, 3, 4], 3)
+      {[1, 2, 3], []}
+
+  """
+  def treesAround(data, 0) do
+    {[], Enum.drop(data, 1)}
+  end
+
+  def treesAround(data, pos) do
+    {left, right} = Enum.split(data, pos)
+    {left, Enum.drop(right, 1)}
+  end
+
   defmodule Part1 do
     @doc """
     Example Inputs for Part 1
@@ -67,8 +89,8 @@ defmodule Day08 do
           row = Enum.at(rows, r)
           column = Enum.at(columns, c)
           tree = Enum.at(row, c)
-          {trees_above, trees_below} = treesAround(column, r)
-          {trees_left, trees_right} = treesAround(row, c)
+          {trees_above, trees_below} = Day08.treesAround(column, r)
+          {trees_left, trees_right} = Day08.treesAround(row, c)
           ns = isVisible(tree, trees_above, trees_below)
           ew = isVisible(tree, trees_left, trees_right)
 
@@ -84,9 +106,6 @@ defmodule Day08 do
       end)
       |> Enum.sum()
     end
-
-    def isVisible(_tree, [], _), do: true
-    def isVisible(_tree, _, []), do: true
 
     @doc """
     Determine a tree is visible
@@ -107,31 +126,12 @@ defmodule Day08 do
         false
 
     """
+    def isVisible(_tree, [], _), do: true
+    def isVisible(_tree, _, []), do: true
+
     def isVisible(tree, other, other_other) do
       Enum.all?(other, fn x -> x < tree end) or
         Enum.all?(other_other, fn y -> y < tree end)
-    end
-
-    @doc """
-    Find trees around a tree
-
-    ## Examples
-
-        iex> Day08.Part1.treesAround([1, 2, 3, 4], 0)
-        {[], [2, 3, 4]}
-        iex> Day08.Part1.treesAround([1, 2, 3, 4], 1)
-        {[1], [3, 4]}
-        iex> Day08.Part1.treesAround([1, 2, 3, 4], 3)
-        {[1, 2, 3], []}
-
-    """
-    def treesAround(data, 0) do
-      {[], Enum.drop(data, 1)}
-    end
-
-    def treesAround(data, pos) do
-      {left, right} = Enum.split(data, pos)
-      {left, Enum.drop(right, 1)}
     end
   end
 
@@ -162,8 +162,8 @@ defmodule Day08 do
           row = Enum.at(rows, r)
           column = Enum.at(columns, c)
           tree = Enum.at(row, c)
-          {trees_above, trees_below} = treesAround(column, r)
-          {trees_left, trees_right} = treesAround(row, c)
+          {trees_above, trees_below} = Day08.treesAround(column, r)
+          {trees_left, trees_right} = Day08.treesAround(row, c)
           trees_above = Enum.reverse(trees_above)
           trees_left = Enum.reverse(trees_left)
           up = score(tree, trees_above)
@@ -212,28 +212,6 @@ defmodule Day08 do
         false ->
           1
       end
-    end
-
-    @doc """
-    Find trees around a tree
-
-    ## Examples
-
-        iex> Day08.Part1.treesAround([1, 2, 3, 4], 0)
-        {[], [2, 3, 4]}
-        iex> Day08.Part1.treesAround([1, 2, 3, 4], 1)
-        {[1], [3, 4]}
-        iex> Day08.Part1.treesAround([1, 2, 3, 4], 3)
-        {[1, 2, 3], []}
-
-    """
-    def treesAround(data, 0) do
-      {[], Enum.drop(data, 1)}
-    end
-
-    def treesAround(data, pos) do
-      {left, right} = Enum.split(data, pos)
-      {left, Enum.drop(right, 1)}
     end
   end
 
