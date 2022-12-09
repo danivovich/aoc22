@@ -42,7 +42,7 @@ defmodule Day09 do
     end
 
     def processMoves(moves) do
-      start = {[{4, 0}], [{4, 0}]}
+      start = {[{0, 0}], [{0, 0}]}
 
       Enum.reduce(moves, start, fn move, data ->
         processMove(data, move)
@@ -101,7 +101,7 @@ defmodule Day09 do
 
     def moveTail?({tr, tc}, {hr, hc}) do
       causeRow =
-        case abs(tr) - abs(hr) do
+        case hr - tr do
           0 ->
             false
 
@@ -116,7 +116,7 @@ defmodule Day09 do
         end
 
       causeCol =
-        case abs(tc) - abs(hc) do
+        case hc - tc do
           0 ->
             false
 
@@ -138,7 +138,9 @@ defmodule Day09 do
   end
 
   def part1 do
-    nil
+    Day09.input()
+    |> Day09.Part1.processMoves()
+    |> Day09.Part1.countTails()
   end
 
   def part2 do
