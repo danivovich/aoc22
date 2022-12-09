@@ -3,26 +3,6 @@ defmodule Day09 do
   AOC2022 Day 9
   """
 
-  def startingGrid() do
-    [
-      [".", ".", ".", ".", ".", "."],
-      [".", ".", ".", ".", ".", "."],
-      [".", ".", ".", ".", ".", "."],
-      [".", ".", ".", ".", ".", "."],
-      ["H", ".", ".", ".", ".", "."]
-    ]
-  end
-
-  def startingHistory() do
-    [
-      [".", ".", ".", ".", ".", "."],
-      [".", ".", ".", ".", ".", "."],
-      [".", ".", ".", ".", ".", "."],
-      [".", ".", ".", ".", ".", "."],
-      ["s", ".", ".", ".", ".", "."]
-    ]
-  end
-
   def input do
     {:ok, contents} = File.read("inputs/day09_input.txt")
 
@@ -62,113 +42,95 @@ defmodule Day09 do
     end
 
     def processMoves(moves) do
-      start = {Day09.startingGrid(), Day09.startingHistory()}
+      start = {[{4, 0}], [{4, 0}]}
 
-      Enum.reduce(moves, start, fn move, {grid, _history} = data ->
-        currentHead = currentPos(grid)
-        processMove(data, move, currentHead, currentHead)
+      Enum.reduce(moves, start, fn move, data ->
+        processMove(data, move)
       end)
     end
 
-    def countTails({_grid, history}) do
-      Enum.reduce(history, 0, fn row, acc ->
-        count =
-          row
-          |> Enum.filter(fn c -> c == "#" or c == "s" end)
-          |> Enum.count()
-
-        acc + count
-      end)
+    def countTails({_heads, history}) do
+      history
+      |> Enum.uniq()
+      |> Enum.count()
     end
 
-    @doc """
-    Find the current position
-
-    ## Examples
-
-        iex> Day09.Part1.currentPos(Day09.startingGrid())
-        {4, 0}
-
-    """
-    def currentPos(grid) do
-      row =
-        Enum.find_index(grid, fn row ->
-          case Enum.find_index(row, fn col -> col == "s" or col == "H" end) do
-            nil ->
-              false
-
-            _ ->
-              true
-          end
-        end)
-
-      col = Enum.find_index(Enum.at(grid, row), fn col -> col == "s" or col == "H" end)
-      {row, col}
-    end
-
-    def processMove(data, {_, 0}, _current, _previous) do
+    def processMove(data, {_, 0}) do
       data
     end
 
-    def processMove({grid, history}, {"R", steps}, {r, c} = current, previous) do
+    def processMove({heads, _history} = data, {"R", steps}) do
+      {r, c} = Enum.at(heads, -1)
       next = {r, c + 1}
-      data = updateData(grid, history, current, next, previous)
-      processMove(data, {"R", steps - 1}, next, current)
+      data = updateData(data, {r, c}, next)
+      processMove(data, {"R", steps - 1})
     end
 
-    def processMove({grid, history}, {"U", steps}, {r, c} = current, previous) do
+    def processMove({heads, _history} = data, {"U", steps}) do
+      {r, c} = Enum.at(heads, -1)
       next = {r - 1, c}
-      data = updateData(grid, history, current, next, previous)
-      processMove(data, {"U", steps - 1}, next, current)
+      data = updateData(data, {r, c}, next)
+      processMove(data, {"U", steps - 1})
     end
 
-    def processMove({grid, history}, {"L", steps}, {r, c} = current, previous) do
+    def processMove({heads, _history} = data, {"L", steps}) do
+      {r, c} = Enum.at(heads, -1)
       next = {r, c - 1}
-      data = updateData(grid, history, current, next, previous)
-      processMove(data, {"L", steps - 1}, next, current)
+      data = updateData(data, {r, c}, next)
+      processMove(data, {"L", steps - 1})
     end
 
-    def processMove({grid, history}, {"D", steps}, {r, c} = current, previous) do
+    def processMove({heads, _history} = data, {"D", steps}) do
+      {r, c} = Enum.at(heads, -1)
       next = {r + 1, c}
-      data = updateData(grid, history, current, next, previous)
-      processMove(data, {"D", steps - 1}, next, current)
+      data = updateData(data, {r, c}, next)
+      processMove(data, {"D", steps - 1})
     end
 
-    def updateData(grid, history, {rindex, cindex} = _current, {x, y} = _next, {z, q} = _previous) do
-      grid =
-        grid
-        |> Enum.with_index(fn row, r ->
-          case r == z do
-            false ->
-              row
+    def updateData({headHistory, tailHistory}, current, next) do
+      tail = Enum.at(tailHistory, -1)
 
-            true ->
-              List.replace_at(row, q, "T")
-          end
-        end)
-        |> Enum.with_index(fn row, r ->
-          case r == x do
-            false ->
-              row
+      case moveTail?(tail, next) do
+        true ->
+          {List.insert_at(headHistory, -1, next), List.insert_at(tailHistory, -1, current)}
 
-            true ->
-              List.replace_at(row, y, "H")
-          end
-        end)
+        false ->
+          {List.insert_at(headHistory, -1, next), tailHistory}
+      end
+    end
 
-      history =
-        history
-        |> Enum.with_index(fn row, r ->
-          case r == rindex do
-            false ->
-              row
+    def moveTail?({tr, tc}, {hr, hc}) do
+      causeRow =
+        case abs(tr) - abs(hr) do
+          0 ->
+            false
 
-            true ->
-              List.replace_at(row, cindex, "#")
-          end
-        end)
+          -1 ->
+            false
 
-      {grid, history}
+          1 ->
+            false
+
+          _ ->
+            true
+        end
+
+      causeCol =
+        case abs(tc) - abs(hc) do
+          0 ->
+            false
+
+          -1 ->
+            false
+
+          1 ->
+            false
+
+          _ ->
+            true
+        end
+
+      causeRow || causeCol
     end
   end
 
