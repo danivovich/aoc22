@@ -9,6 +9,6 @@ defmodule Day09Test do
   end
 
   test "checks part 2" do
-    assert Day09.part2() == nil
+    assert Day09.part2() == 2578
   end
 end
