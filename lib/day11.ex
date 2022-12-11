@@ -1,0 +1,192 @@
+defmodule Day11 do
+  @moduledoc """
+  AOC2022 Day 11
+  """
+
+  def input do
+    {:ok, contents} = File.read("inputs/day11_input.txt")
+
+    parseInput(contents)
+  end
+
+  def example do
+    {:ok, contents} = File.read("inputs/day11_example.txt")
+
+    parseInput(contents)
+  end
+
+  def parseInput(contents) do
+    contents
+    |> String.split("\n\n", trim: true)
+    |> Enum.map(fn monkeyDescription ->
+      monkey = parseMonkey(monkeyDescription)
+      {monkey[:num], monkey}
+    end)
+    |> Map.new()
+  end
+
+  def parseMonkey(description) do
+    description
+    |> String.split("\n", trim: true)
+    |> Enum.map(fn monkeyLine ->
+      parseLine(monkeyLine)
+    end)
+    |> Map.new()
+    |> Map.put_new(:inspectionCount, 0)
+  end
+
+  def parseLine("Monkey " <> numString) do
+    {num, _} =
+      numString
+      |> String.replace(":", "")
+      |> Integer.parse()
+
+    {:num, num}
+  end
+
+  def parseLine("  Starting items: " <> itemsString) do
+    items =
+      itemsString
+      |> String.split(", ", trim: true)
+      |> Enum.map(fn s ->
+        {i, _} = Integer.parse(s)
+        i
+      end)
+
+    {:items, items}
+  end
+
+  def parseLine("  Operation: " <> op), do: {:operation, op}
+  def parseLine("  Test: " <> test), do: {:test, test}
+
+  def parseLine("    If true: throw to monkey " <> numString) do
+    {num, _} =
+      numString
+      |> String.replace(":", "")
+      |> Integer.parse()
+
+    {:trueToMonkey, num}
+  end
+
+  def parseLine("    If false: throw to monkey " <> numString) do
+    {num, _} =
+      numString
+      |> String.replace(":", "")
+      |> Integer.parse()
+
+    {:falseToMonkey, num}
+  end
+
+  def runRounds(monkeys, amount) do
+    Range.new(1, amount)
+    |> Enum.reduce(monkeys, fn _round, monkeys ->
+      runRound(monkeys)
+    end)
+  end
+
+  def runRound(monkeys) do
+    Range.new(0, Enum.count(monkeys) - 1)
+    |> Enum.reduce(monkeys, fn num, monkeys ->
+      monkey = monkeys[num]
+      items = monkey[:items]
+      monkeyTurn(items, monkey, monkeys)
+    end)
+  end
+
+  def monkeyTurn([], _monkey, monkeys), do: monkeys
+
+  def monkeyTurn([item | items], monkey, monkeys) do
+    newItemValue = worry(item, monkey[:operation])
+    newMonkey = Map.put(monkey, :inspectionCount, monkey[:inspectionCount] + 1)
+    newItemValue = bored(newItemValue)
+
+    targetMonkey =
+      case monkeyTest(newItemValue, monkey[:test]) do
+        true ->
+          monkey[:trueToMonkey]
+
+        false ->
+          monkey[:falseToMonkey]
+      end
+
+    newMonkeys = toss(newItemValue, items, newMonkey, targetMonkey, monkeys)
+    monkeyTurn(items, newMonkey, newMonkeys)
+  end
+
+  def worry(item, "new = old * old"), do: item * item
+
+  def worry(item, "new = old * " <> v) do
+    {i, _} = Integer.parse(v)
+    i * item
+  end
+
+  def worry(item, "new = old + " <> v) do
+    {i, _} = Integer.parse(v)
+    i + item
+  end
+
+  def bored(item), do: floor(item / 3)
+
+  def monkeyTest(item, "divisible by " <> v) do
+    {i, _} = Integer.parse(v)
+    rem(item, i) == 0
+  end
+
+  def toss(new, newItems, monkey, target, monkeys) do
+    oldMonkey =
+      monkey
+      |> Map.put(:items, newItems)
+
+    oldTargetMonkey = monkeys[target]
+
+    newTargetMonkey =
+      oldTargetMonkey
+      |> Map.put(:items, Enum.concat(oldTargetMonkey[:items], [new]))
+
+    monkeys
+    |> Map.put(monkey[:num], oldMonkey)
+    |> Map.put(target, newTargetMonkey)
+  end
+
+  def monkeyBusiness(monkeys) do
+    [top1, top2] =
+      monkeys
+      |> Enum.map(fn {_i, monkey} ->
+        monkey[:inspectionCount]
+      end)
+      |> Enum.sort()
+      |> Enum.reverse()
+      |> Enum.take(2)
+
+    top1 * top2
+  end
+
+  defmodule Part1 do
+    @doc """
+    Example Inputs for Part 1
+
+    ## Examples
+
+        iex> Day11.Part1.example()
+        10605
+
+    """
+    def example() do
+      Day11.example()
+      |> Day11.runRounds(20)
+      |> Day11.monkeyBusiness()
+    end
+  end
+
+  defmodule Part2 do
+  end
+
+  def part1 do
+    Day11.input()
+    |> Day11.runRounds(20)
+    |> Day11.monkeyBusiness()
+  end
+
+  def part2 do
+  end
+end
