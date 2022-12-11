@@ -77,42 +77,6 @@ defmodule Day11 do
     {:falseToMonkey, num}
   end
 
-  def runRounds(monkeys, amount) do
-    Range.new(1, amount)
-    |> Enum.reduce(monkeys, fn _round, monkeys ->
-      runRound(monkeys)
-    end)
-  end
-
-  def runRound(monkeys) do
-    Range.new(0, Enum.count(monkeys) - 1)
-    |> Enum.reduce(monkeys, fn num, monkeys ->
-      monkey = monkeys[num]
-      items = monkey[:items]
-      monkeyTurn(items, monkey, monkeys)
-    end)
-  end
-
-  def monkeyTurn([], _monkey, monkeys), do: monkeys
-
-  def monkeyTurn([item | items], monkey, monkeys) do
-    newItemValue = worry(item, monkey[:operation])
-    newMonkey = Map.put(monkey, :inspectionCount, monkey[:inspectionCount] + 1)
-    newItemValue = bored(newItemValue)
-
-    targetMonkey =
-      case monkeyTest(newItemValue, monkey[:test]) do
-        true ->
-          monkey[:trueToMonkey]
-
-        false ->
-          monkey[:falseToMonkey]
-      end
-
-    newMonkeys = toss(newItemValue, items, newMonkey, targetMonkey, monkeys)
-    monkeyTurn(items, newMonkey, newMonkeys)
-  end
-
   def worry(item, "new = old * old"), do: item * item
 
   def worry(item, "new = old * " <> v) do
@@ -124,8 +88,6 @@ defmodule Day11 do
     {i, _} = Integer.parse(v)
     i + item
   end
-
-  def bored(item), do: floor(item / 3)
 
   def monkeyTest(item, "divisible by " <> v) do
     {i, _} = Integer.parse(v)
@@ -173,20 +135,125 @@ defmodule Day11 do
     """
     def example() do
       Day11.example()
-      |> Day11.runRounds(20)
+      |> runRounds(20)
       |> Day11.monkeyBusiness()
     end
+
+    def runRounds(monkeys, amount) do
+      Range.new(1, amount)
+      |> Enum.reduce(monkeys, fn _round, monkeys ->
+        runRound(monkeys)
+      end)
+    end
+
+    def runRound(monkeys) do
+      Range.new(0, Enum.count(monkeys) - 1)
+      |> Enum.reduce(monkeys, fn num, monkeys ->
+        monkey = monkeys[num]
+        items = monkey[:items]
+        monkeyTurn(items, monkey, monkeys)
+      end)
+    end
+
+    def monkeyTurn([], _monkey, monkeys), do: monkeys
+
+    def monkeyTurn([item | items], monkey, monkeys) do
+      newItemValue = Day11.worry(item, monkey[:operation])
+      newMonkey = Map.put(monkey, :inspectionCount, monkey[:inspectionCount] + 1)
+      newItemValue = bored(newItemValue)
+
+      targetMonkey =
+        case Day11.monkeyTest(newItemValue, monkey[:test]) do
+          true ->
+            monkey[:trueToMonkey]
+
+          false ->
+            monkey[:falseToMonkey]
+        end
+
+      newMonkeys = Day11.toss(newItemValue, items, newMonkey, targetMonkey, monkeys)
+      monkeyTurn(items, newMonkey, newMonkeys)
+    end
+
+    def bored(item), do: floor(item / 3)
   end
 
   defmodule Part2 do
+    @doc """
+    Example Inputs for Part 2
+
+    ## Examples
+
+        iex> Day11.Part2.example()
+        2713310158
+
+    """
+    def example() do
+      Day11.example()
+      |> runRounds(10_000)
+      |> Day11.monkeyBusiness()
+    end
+
+    def runRounds(monkeys, amount) do
+      lcm =
+        Enum.reduce(monkeys, 1, fn {_k, monkey}, acc ->
+          acc * divisor(monkey[:test])
+        end)
+
+      Range.new(1, amount)
+      |> Enum.reduce(monkeys, fn _nround, monkeys ->
+        runRound(monkeys, lcm)
+      end)
+    end
+
+    def runRound(monkeys, lcm) do
+      Range.new(0, Enum.count(monkeys) - 1)
+      |> Enum.reduce(monkeys, fn num, monkeys ->
+        monkey = monkeys[num]
+        items = monkey[:items]
+        monkeyTurn(items, monkey, monkeys, lcm)
+      end)
+    end
+
+    def monkeyTurn([], _monkey, monkeys, _lcm), do: monkeys
+
+    def monkeyTurn([item | items], monkey, monkeys, lcm) do
+      newItemValue = Day11.worry(item, monkey[:operation])
+      newMonkey = Map.put(monkey, :inspectionCount, monkey[:inspectionCount] + 1)
+      newItemValue = bored(newItemValue, lcm)
+
+      targetMonkey =
+        case Day11.monkeyTest(newItemValue, monkey[:test]) do
+          true ->
+            monkey[:trueToMonkey]
+
+          false ->
+            monkey[:falseToMonkey]
+        end
+
+      newMonkeys = Day11.toss(newItemValue, items, newMonkey, targetMonkey, monkeys)
+      monkeyTurn(items, newMonkey, newMonkeys, lcm)
+    end
+
+    def bored(item, lcm) do
+      rem(item, lcm)
+    end
+
+    def divisor("divisible by " <> v) do
+      {i, _} = Integer.parse(v)
+      i
+    end
   end
 
   def part1 do
     Day11.input()
-    |> Day11.runRounds(20)
+    |> Day11.Part1.runRounds(20)
     |> Day11.monkeyBusiness()
   end
 
   def part2 do
+    Day11.input()
+    |> Day11.Part2.runRounds(10_000)
+    |> Day11.monkeyBusiness()
   end
 end
