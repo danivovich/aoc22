@@ -16,17 +16,25 @@ defmodule Day12 do
   end
 
   def history(grid) do
-    Enum.map(grid, fn row ->
-      Enum.map(row, fn _i -> "." end)
+    Enum.map(grid, fn {key, _v} ->
+      {key, "."}
     end)
+    |> Map.new()
   end
 
   def parseInput(contents) do
     contents
     |> String.split("\n", trim: true)
-    |> Enum.map(fn row ->
-      String.split(row, "", trim: true)
+    |> Enum.with_index()
+    |> Enum.flat_map(fn {row, r} ->
+      row
+      |> String.split("", trim: true)
+      |> Enum.with_index()
+      |> Enum.map(fn {v, c} ->
+        {{r, c}, v}
+      end)
     end)
+    |> Map.new()
   end
 
   def print(grid) do
@@ -42,17 +50,11 @@ defmodule Day12 do
   end
 
   def getTarget(grid) do
-    row =
-      Enum.find_index(grid, fn row ->
-        Enum.member?(row, "E")
-      end)
+    Enum.find(grid, fn {_k, v} -> v == "E" end)
+  end
 
-    col =
-      Enum.find_index(Enum.at(grid, row), fn col ->
-        col == "E"
-      end)
-
-    {row, col}
+  def getStart(grid) do
+    Enum.find(grid, fn {_k, v} -> v == "S" end)
   end
 
   def moveToTarget(_grid, history, moves, current, target) when current == target do
@@ -68,22 +70,12 @@ defmodule Day12 do
 
       false ->
         Enum.map(moveOptions, fn {r, c, d} ->
-          row = Enum.at(history, r)
-          col = List.replace_at(row, c, d)
-          newHistory = List.replace_at(history, r, col)
+          newHistory = Map.put(history, {r, c}, d)
           moveToTarget(grid, newHistory, moves + 1, {r, c}, target)
         end)
         |> Enum.filter(fn x -> x != nil end)
         |> Enum.min_by(fn {moves, _history} -> moves end, fn -> nil end)
     end
-  end
-
-  def countMoves({_m, history}) do
-    Enum.map(history, fn row ->
-      Enum.map(row, fn cell -> Day12.count(cell) end)
-      |> Enum.sum()
-    end)
-    |> Enum.sum()
   end
 
   def getOptions(grid, history, {r, c} = current) do
@@ -98,9 +90,11 @@ defmodule Day12 do
       {r - 1, c, "^"},
       {r + 1, c, "v"}
     ]
+    # |> IO.inspect(label: "Options")
     |> Enum.filter(fn {x, y, _d} ->
-      x >= 0 and y >= 0 and x < length(grid) and y < length(Enum.at(grid, 0))
+      Map.has_key?(grid, {x, y})
     end)
+    # |> IO.inspect(label: "In Grid")
     |> Enum.filter(fn {x, y, _d} ->
       case cellAt(history, {x, y}) do
         "." ->
@@ -110,6 +104,7 @@ defmodule Day12 do
           false
       end
     end)
+    # |> IO.inspect(label: "Unvisted")
     |> Enum.filter(fn {x, y, _d} ->
       v =
         grid
@@ -124,13 +119,12 @@ defmodule Day12 do
           v - currentValue == 1
       end
     end)
+
+    # |> IO.inspect(label: "Climbable")
   end
 
-  def cellAt(grid, {r, c}) do
-    v =
-      grid
-      |> Enum.at(r)
-      |> Enum.at(c)
+  def cellAt(grid, key) do
+    v = Map.get(grid, key)
 
     case v do
       "S" ->
@@ -146,13 +140,6 @@ defmodule Day12 do
     end
   end
 
-  def count("."), do: 0
-  def count("E"), do: 0
-  def count(">"), do: 1
-  def count("^"), do: 1
-  def count("<"), do: 1
-  def count("v"), do: 1
-
   defmodule Part1 do
     @doc """
     Example Inputs for Part 1
@@ -165,11 +152,13 @@ defmodule Day12 do
     """
     def example() do
       grid = Day12.example()
-      target = Day12.getTarget(grid)
+      {target, _v} = Day12.getTarget(grid)
+      {start, _v} = Day12.getStart(grid)
+      history = Day12.history(grid)
 
       {moves, _history} =
         grid
-        |> Day12.moveToTarget(Day12.history(grid), 0, {0, 0}, target)
+        |> Day12.moveToTarget(history, 0, start, target)
 
       moves
     end
@@ -179,6 +168,18 @@ defmodule Day12 do
   end
 
   def part1 do
+    grid = Day12.input()
+    {target, _v} = Day12.getTarget(grid)
+    {start, _v} = Day12.getStart(grid)
+
+    history = Day12.history(grid)
+
+    {moves, _history} =
+      grid
+      |> Day12.moveToTarget(Day12.history(grid), 0, start, target)
+      |> Day12.moveToTarget(history, 0, start, target)
+
+    moves
   end
 
   def part2 do
