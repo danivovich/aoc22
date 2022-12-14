@@ -103,8 +103,8 @@ defmodule Day12 do
 
     case v do
       "S" ->
-        # Use something smaller than a for the start point
-        "`"
+        # Start has elevation a
+        "a"
 
       "E" ->
         # E has an elevation of z
@@ -142,6 +142,41 @@ defmodule Day12 do
   end
 
   defmodule Part2 do
+    @doc """
+    Example Inputs for Part 2
+
+    ## Examples
+
+        iex> Day12.Part2.example()
+        29
+
+    """
+    def example() do
+      SharedMap.start()
+      grid = Day12.example()
+      {target, _v} = Day12.getTarget(grid)
+      starts = getAllStarts(grid)
+
+      Enum.map(starts, fn start ->
+        Day12.history(grid)
+        SharedMap.set(start, 0)
+
+        Day12.moveToTarget(grid, start, target)
+        result = SharedMap.get(target)
+        SharedMap.clear()
+        result
+      end)
+      |> Enum.min()
+    end
+
+    def getAllStarts(grid) do
+      Enum.filter(grid, fn {_k, v} ->
+        v == "a"
+      end)
+      |> Enum.map(fn {k, _v} ->
+        k
+      end)
+    end
   end
 
   def part1 do
@@ -160,5 +195,20 @@ defmodule Day12 do
   end
 
   def part2 do
+    SharedMap.start()
+    grid = Day12.input()
+    {target, _v} = Day12.getTarget(grid)
+    starts = Day12.Part2.getAllStarts(grid)
+
+    Enum.map(starts, fn start ->
+      Day12.history(grid)
+      SharedMap.set(start, 0)
+
+      Day12.moveToTarget(grid, start, target)
+      result = SharedMap.get(target)
+      SharedMap.clear()
+      result
+    end)
+    |> Enum.min()
   end
 end
