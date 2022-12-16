@@ -138,12 +138,40 @@ defmodule Day13 do
     ## Examples
 
         iex> Day13.Part2.example()
-        nil
+        140
 
     """
     def example() do
       Day13.example()
-      nil
+      |> run()
+    end
+
+    def run(data) do
+      [{_two, indexTwo}, {_six, indexSix}] =
+        data
+        |> asOneList()
+        |> withNewPairs()
+        |> Enum.sort(&Day13.compare/2)
+        |> Enum.with_index()
+        |> markers()
+
+      (indexTwo + 1) * (indexSix + 1)
+    end
+
+    def asOneList(pairs) do
+      Enum.reduce(pairs, [], fn [left, right], acc ->
+        [left] ++ [right] ++ acc
+      end)
+    end
+
+    def withNewPairs(pairs) do
+      [[[2]]] ++ [[[6]]] ++ pairs
+    end
+
+    def markers(list) do
+      Enum.filter(list, fn {entry, _} ->
+        entry == [[2]] or entry == [[6]]
+      end)
     end
   end
 
@@ -164,6 +192,6 @@ defmodule Day13 do
 
   def part2 do
     Day13.input()
-    nil
+    |> Day13.Part2.run()
   end
 end
