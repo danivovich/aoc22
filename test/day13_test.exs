@@ -5,7 +5,7 @@ defmodule Day13Test do
   doctest Day13.Part2
 
   test "checks part 1" do
-    # assert Day13.part1() != 812
+    assert Day13.part1() == 4894
   end
 
   test "checks part 2" do

@@ -59,97 +59,50 @@ defmodule Day13 do
       iex> Day13.compare([[],[]], [[],[],[9,7]])
       true
   """
-  def compare(left, right) when is_integer(left) and is_integer(right) do
-    IO.inspect(left, label: "compare left int")
-    IO.inspect(right, label: "compare right int")
+  def compare(left, right) do
+    case check_order(left, right) do
+      :ok -> true
+      :unknown -> true
+      :wrong -> false
+    end
+  end
 
-    case left <= right do
-      true ->
-        IO.inspect("less than ok")
-        true
+  defp check_order(left, right) do
+    case {left, right} do
+      {l, r} when is_integer(l) and is_integer(r) -> compare_ints(l, r)
+      {l, r} when is_list(l) and is_list(r) -> compare_lists(l, r)
+      {l, r} when is_integer(l) and is_list(r) -> check_order([l], r)
+      {l, r} when is_list(l) and is_integer(r) -> check_order(l, [r])
+    end
+  end
+
+  defp compare_ints(left, right) do
+    cond do
+      left < right -> :ok
+      left > right -> :wrong
+      left == right -> :unknown
+    end
+  end
+
+  defp compare_lists(left, right) do
+    cond do
+      left == [] and right == [] -> :unknown
+      left == [] -> :ok
+      right == [] -> :wrong
+      true -> compare_lists_by_element(left, right)
+    end
+  end
+
+  defp compare_lists_by_element([left | restLeft], [right | restRight]) do
+    order = check_order(left, right)
+
+    case order do
+      :unknown ->
+        compare_lists(restLeft, restRight)
 
       _ ->
-        IO.inspect("NOT ok")
-        false
+        order
     end
-  end
-
-  def compare(left, right) when is_integer(left) and is_list(right) do
-    IO.inspect(left, label: "compare left int")
-    IO.inspect(right, label: "compare right list")
-    IO.inspect("wrap right and compare")
-    compare([left], right)
-  end
-
-  def compare(left, right) when is_list(left) and is_integer(right) do
-    IO.inspect(left, label: "compare left list")
-    IO.inspect(right, label: "compare right int")
-    IO.inspect("wrap right and compare")
-    compare(left, [right])
-  end
-
-  def compare([], []) do
-    IO.inspect([], label: "compare left empty")
-    IO.inspect([], label: "compare right empty")
-    IO.inspect("same size ok")
-    true
-  end
-
-  def compare([], more) when is_list(more) do
-    IO.inspect([], label: "compare left exhaust left")
-    IO.inspect(more, label: "compare right exhaust left")
-    IO.inspect("left out, ok")
-    true
-  end
-
-  def compare(more, []) when is_list(more) do
-    IO.inspect(more, label: "compare left exhaust right")
-    IO.inspect([], label: "compare right exhaust right")
-    IO.inspect("right out, NOT ok")
-    false
-  end
-
-  def compare([left | first] = l, [right | second] = r)
-      when is_integer(left) and is_integer(right) do
-    IO.inspect(l, label: "compare left int first elm")
-    IO.inspect(r, label: "compare right int first elm")
-
-    case left < right do
-      true ->
-        IO.inspect("left smaller, ok")
-        true
-
-      false ->
-        case left == right do
-          true ->
-            IO.inspect("equal keep going")
-            true and compare(first, second)
-
-          false ->
-            IO.inspect("right smaller, NOT OK")
-            false
-        end
-    end
-  end
-
-  def compare([left | first] = l, [right | second] = r)
-      when is_list(left) and is_integer(right) do
-    IO.inspect(l, label: "compare left list as first elm")
-    IO.inspect(r, label: "compare right int as first elm")
-    compare(left, [right]) and compare(first, second)
-  end
-
-  def compare([left | first] = l, [right | second] = r)
-      when is_integer(left) and is_list(right) do
-    IO.inspect(l, label: "compare left int as first elm")
-    IO.inspect(r, label: "compare right list as first elm")
-    compare([left], right) and compare(first, second)
-  end
-
-  def compare([left | first] = l, [right | second] = r) when is_list(left) and is_list(right) do
-    IO.inspect(l, label: "compare left list as first elm")
-    IO.inspect(r, label: "compare right list as first elm")
-    compare(left, right) and compare(first, second)
   end
 
   defmodule Part1 do
@@ -166,15 +119,11 @@ defmodule Day13 do
       Day13.example()
       |> Enum.with_index()
       |> Enum.map(fn {[first, second], i} ->
-        IO.puts("\n\nStarting for #{i + 1}")
-
         case Day13.compare(first, second) do
           true ->
-            IO.puts("Good for #{i + 1}")
             i + 1
 
           false ->
-            IO.puts("Bad for #{i + 1}")
             0
         end
       end)
@@ -202,15 +151,11 @@ defmodule Day13 do
     Day13.input()
     |> Enum.with_index()
     |> Enum.map(fn {[first, second], i} ->
-      IO.puts("\n\nStarting for #{i + 1}")
+      case Day13.compare(first, second) do
+        true ->
+          i + 1
 
-      try do
-        Day13.compare(first, second)
-        IO.puts("Good for #{i + 1}")
-        i + 1
-      rescue
-        Day13 ->
-          IO.puts("Bad for #{i + 1}")
+        false ->
           0
       end
     end)
